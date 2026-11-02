@@ -1,0 +1,19 @@
+# dependensi & hasil build
+node_modules/
+.next/
+out/
+build/
+next-env.d.ts
+tsconfig.tsbuildinfo
+.eslintcache
+
+# rahasia - JANGAN pernah diupload
+.env
+.env*.local
+
+# sistem & berbagai berkas sampah
+.DS_Store
+*.log
+npm-debug.log*
+.vercel/
+.git/

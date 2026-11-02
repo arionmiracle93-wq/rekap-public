@@ -5,7 +5,8 @@ import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth";
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
-  if (pathname === "/login" || pathname === "/api/login") return NextResponse.next();
+  // Halaman login & cek kesehatan server harus bisa diakses tanpa sesi.
+  if (pathname === "/login" || pathname === "/api/login" || pathname === "/api/health") return NextResponse.next();
 
   if (verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value)) return NextResponse.next();
 

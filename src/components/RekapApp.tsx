@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, House, Lock, PieChart, Plus, Settings, Table, Trash2, Wallet, X } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, House, Lock, Menu, PieChart, Plus, Settings, Table, Trash2, Wallet, X } from "lucide-react";
 import { BLN, HARI, MAX_ITEMS, SRC, blankDay, calc, fmt, num, rp, status, type Day, type NumKey } from "@/lib/calc";
 import { DetailTable } from "@/components/DetailTable";
 
@@ -105,9 +105,28 @@ export function RekapApp() {
   const [imp, setImp] = useState<Preview | null>(null);
   const [impMsg, setImpMsg] = useState("");
   const [theme, setThemeState] = useState(() => (document.documentElement.dataset.theme === "light" ? "light" : "dark"));
+  const [sideOpen, setSideOpen] = useState(true);
   const dlg = useRef<HTMLDialogElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const reload = () => setTick((t) => t + 1);
+
+  // Ingat pilihan buka/tutup sidebar (khusus tampilan desktop).
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("rk_sidebar") === "closed") setSideOpen(false);
+    } catch {
+      /* penyimpanan tidak tersedia */
+    }
+  }, []);
+  const toggleSide = () =>
+    setSideOpen((v) => {
+      try {
+        localStorage.setItem("rk_sidebar", v ? "closed" : "open");
+      } catch {
+        /* penyimpanan tidak tersedia */
+      }
+      return !v;
+    });
 
   useEffect(() => {
     let alive = true;
@@ -424,7 +443,10 @@ export function RekapApp() {
         <Row a="Total talangan" b={rp(Object.values(rs.src).reduce((a, b) => a + b, 0))} cls="tot" />
       </div>
       </div></div>
-      <div className="lc"><a className="li" href={exportHref}><span>Ekspor CSV ({rlabel})</span><em>Unduh</em></a></div>
+      <div className="lc">
+        <a className="li" href={`${exportHref}&format=xlsx`}><span>Ekspor Excel ({rlabel})</span><em>Unduh .xlsx</em></a>
+        <a className="li" href={exportHref}><span>Ekspor CSV ({rlabel})</span><em>Unduh</em></a>
+      </div>
     </>
   );
 
@@ -445,8 +467,10 @@ export function RekapApp() {
           <input type="number" inputMode="numeric" key={`${month}-${data.modal}`} defaultValue={data.modal} disabled={data.locked} onBlur={(e) => void saveModal(e.target.value)} />
         </label>
         <button type="button" className="li" onClick={() => void toggleLock()}><span>{data.locked ? "Buka kunci bulan" : "Kunci bulan"}</span><em>{data.locked ? "Terkunci" : "Terbuka"}</em></button>
+        <a className="li" href={`/api/export?m=${month}&format=xlsx`}><span>Ekspor Excel</span><em>Unduh .xlsx</em></a>
         <a className="li" href={`/api/export?m=${month}`}><span>Ekspor CSV</span><em>Unduh</em></a>
         <button type="button" className="li" onClick={() => fileRef.current?.click()}><span>Impor dari Excel</span><em>.xlsx</em></button>
+        <a className="li" href="/Rekap_Kas_Nov_2026.xlsx" download><span>Unduh template Excel</span><em>.xlsx</em></a>
         <input ref={fileRef} type="file" accept=".xlsx" hidden onChange={(e) => void pickFile(e.target.files?.[0])} />
       </div>
       <p className="note">Modal hanya berlaku untuk {BLN[mo - 1]} {y}. Bulan lain tidak ikut berubah, dan bulan baru otomatis memakai modal bulan sebelumnya.</p>
@@ -465,9 +489,20 @@ export function RekapApp() {
   );
 
   return (
-    <div className={`app${tab === "detail" ? " wide" : ""}`}>
+    <div className={`app${tab === "detail" ? " wide" : ""}${sideOpen ? "" : " side-off"}`}>
     <main className="main">
       <header className="hdr">
+        <button
+          type="button"
+          className="side-toggle"
+          aria-label={sideOpen ? "Sembunyikan menu" : "Tampilkan menu"}
+          aria-expanded={sideOpen}
+          aria-controls="nav-utama"
+          title={sideOpen ? "Sembunyikan menu" : "Tampilkan menu"}
+          onClick={toggleSide}
+        >
+          <Menu size={20} />
+        </button>
         <h1>{TITLES[tab]}</h1>
         {!(tab === "ringkasan" && rmode !== "bulan") && (
           <div className="msw">
@@ -482,7 +517,7 @@ export function RekapApp() {
     </main>
 
       <button type="button" className="fab" aria-label="Isi rekap" onClick={() => openSheet(fabKey)}><Plus size={26} /></button>
-      <nav className="nav" aria-label="Menu utama">
+      <nav className="nav" id="nav-utama" aria-label="Menu utama">
         <p className="brand"><span className="logo"><Wallet size={20} /></span><span>Rekap Kas<small>Harian</small></span></p>
         <div className="nav-items">
           {NAV.map(([id, label, Icon]) => (

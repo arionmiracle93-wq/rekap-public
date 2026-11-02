@@ -183,3 +183,23 @@ dialog form{display:flex;flex-direction:column;max-height:94dvh}
 }
 
 .msw span{white-space:nowrap}
+
+/* ---- tombol 3 garis: buka/tutup sidebar (hanya desktop) ---- */
+.side-toggle{display:none}
+@media (min-width:1024px){
+  .side-toggle{display:grid;place-items:center;flex:0 0 auto;width:40px;height:40px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;cursor:pointer;transition:background .15s ease,color .15s ease}
+  .side-toggle:hover{background:var(--card2);color:var(--acc)}
+  .side-toggle:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  .app{transition:padding-left .22s ease}
+  .nav{transition:transform .22s ease}
+  /* sidebar disembunyikan: konten ke tengah tapi LEBARNYA TETAP seperti saat sidebar terbuka
+     (1160px, atau sisa layar setelah 252px sidebar) supaya kartu tidak ikut melar */
+  .app.side-off{padding-left:0}
+  .app.side-off .main{max-width:min(1160px,calc(100vw - 252px))}
+  .app.side-off .nav{transform:translateX(-100%);visibility:hidden;transition:transform .22s ease,visibility 0s linear .22s}
+  /* pengecualian: tabel di tab Detail boleh melebar memakai ruang bekas sidebar */
+  .app.side-off.wide .main{max-width:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .app,.nav{transition:none}
+}
